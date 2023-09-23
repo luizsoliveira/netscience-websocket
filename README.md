@@ -1,2 +1,2 @@
 # netsicience-websocket
-Websocket endpoints for real-time information between backend and frontend
+Websocket endpoints for real-time integration between netscience backend and frontend
