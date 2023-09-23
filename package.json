@@ -1,0 +1,20 @@
+{
+    "name": "netscience-websocket",
+    "version": "0.0.1",
+    "description": "Websocket endpoints for real-time integration between netscience backend and frontend",
+    "dependencies": {
+        "express": "^4.18.2",
+        "lazy": "^1.0.11",
+        "n-readlines": "^1.0.1",
+        "path": "^0.12.7",
+        "serve-favicon": "^2.5.0",
+        "socket.io": "^4.7.2"
+    },
+    "scripts": {
+        "dev": "nodemon index.js",
+        "start": "node index.js"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1"
+    }
+}

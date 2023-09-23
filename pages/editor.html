@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO Namespaces</title>
+    <link rel="stylesheet" type="text/css" href="css/file_monitor.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!--Code Mirror Dependencies-->
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css"></link>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/abbott.min.css"></link>
+    <script type="text/javascript" charset="utf-8">
+      $(document).ready(function() {
+
+        // Begin inputting of clicked text into editor
+        function insertText(data) {
+          var cm = $(".CodeMirror")[0].CodeMirror;
+          var doc = cm.getDoc();
+          var line = doc.getLine(doc.lastLine()); // get the line contents
+          var pos = {
+            line: doc.lastLine()
+          };
+          if (line.length === 0) {
+            // check if the line is empty
+            // add the data
+            doc.replaceRange(data, pos);
+          } else {
+            // add a new line and the data
+            doc.replaceRange("\n" + data, pos);
+          }
+          cm.scrollIntoView({line: doc.lastLine(), char:0}, 200)
+        }
+
+        var editor = CodeMirror.fromTextArea(document.getElementById('file'), {
+            lineNumbers: true,
+            mode: 'text/x-sh',
+            theme: 'abbott',
+            styleActiveLine: true,
+            readOnly: 'nocursor'
+        });
+
+        editor.setSize(700, 300);
+
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const taskId = urlParams.get('taskId')
+        
+        const fileSocket = io(`/file_monitor-${taskId}`); // the "file-monitor" namespace
+
+        fileSocket.on("connect", () => {
+          console.log(`Connected with success in the file-monitor Namespace: ${fileSocket.nsp} Socket id: ${fileSocket.id}`);
+          $('#file').empty();
+          sessionStorage.setItem("last_line_printed", 0);
+        });
+
+        fileSocket.on("file_update", (arg) => {
+          const last_line_read = sessionStorage.getItem("last_line_printed", 0);
+          //const taskId = fileSocket.nsp.split('-', 2)[1]
+          console.log(`${arg.message} Lines: ${arg.number_of_lines} Namespace: ${fileSocket.nsp} taskId: ${arg.taskId}`)
+          
+          //Avoding duplicates
+          if (arg.number_of_lines > last_line_read) {
+            begin = parseInt(last_line_read) + 1
+            $.get( `/file_segment/${arg.taskId}/${begin}/${arg.number_of_lines}`, function( data ) {
+              //$("#file").append(data.join('<br>') + '<br>');
+              insertText(data.join("\r\n"));
+              $("#file").animate({ scrollTop: $('#file').prop("scrollHeight")}, 1000);
+              sessionStorage.setItem("last_line_printed", arg.number_of_lines)
+            });
+          }
+          
+          
+        });
+
+      });
+    </script>
+</head>
+  <body>
+    <body>
+      <h1>File Monitor Changes and Display</h1>
+      <h2>File:</h2>
+      <!--<div style="background-color: black; color: white;" id="file"></div>-->
+
+      <textarea id="file" name="code"></textarea>
+      
+    </body>
+    <script>
+
+      
+
+    </script>
+  </body>
+</html>
