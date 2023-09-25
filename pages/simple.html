@@ -12,10 +12,10 @@
         const urlParams = new URLSearchParams(queryString);
         const taskId = urlParams.get('taskId')
         
-        const fileSocket = io(`/file_monitor-${taskId}`); // the "file-monitor" namespace
+        const fileSocket = io(`/stdout_monitor-${taskId}`); // the "stdout-monitor" namespace
 
         fileSocket.on("connect", () => {
-          console.log(`Connected with success in the file-monitor Namespace: ${fileSocket.nsp} Socket id: ${fileSocket.id}`);
+          console.log(`Connected with success in the stdout-monitor Namespace: ${fileSocket.nsp} Socket id: ${fileSocket.id}`);
           $('#file').empty();
           sessionStorage.setItem("last_line_printed", 0);
         });
@@ -28,7 +28,7 @@
           //Avoding duplicates
           if (arg.number_of_lines > last_line_read) {
             begin = parseInt(last_line_read) + 1
-            $.get( `/file_segment/${arg.taskId}/${begin}/${arg.number_of_lines}`, function( data ) {
+            $.get( `/stdout_segment/${arg.taskId}/${begin}/${arg.number_of_lines}`, function( data ) {
               $("#file").append(data.join('<br>') + '<br>');
               $("#file").animate({ scrollTop: $('#file').prop("scrollHeight")}, 1000);
               sessionStorage.setItem("last_line_printed", arg.number_of_lines)

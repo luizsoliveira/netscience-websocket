@@ -1,27 +1,35 @@
+//Setting Express
 const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
+
+//Setting Socket.io
 const { Server } = require("socket.io");
 const io = new Server(server);
+
+//Setting the filesystem libraries
 const fs = require('fs');
 const fileUtils = require('./fileUtils');
-var favicon = require('serve-favicon')
 var path = require('path')
 
+// Generic settings for Express server
+var favicon = require('serve-favicon')
 app.use(express.static(__dirname + '/public'));
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 
+// Demo routes for the HTML pages
 app.get('/task', (req, res) => {
   res.sendFile(__dirname + '/pages/editor.html');
 });
 
 app.get('/task_simple', (req, res) => {
-  res.sendFile(__dirname + '/pages/simle.html');
+  res.sendFile(__dirname + '/pages/simple.html');
 });
 
-app.get('/file_segment/:taskId/:begin/:end', (req, res) => {
-    const filename = `./${req.params.taskId}/stdout.log`
+// Route that returns a segment of stdout file
+app.get('/stdout_segment/:taskId/:begin/:end', (req, res) => {
+    const filename = `/var/tasks/${req.params.taskId}/stdout.log`
     lines = fileUtils.getRangeOfLines(filename, req.params.begin, req.params.end)
     res.send(lines)
 
@@ -30,10 +38,16 @@ app.get('/file_segment/:taskId/:begin/:end', (req, res) => {
 /*
  Meta route for websockets based in namespace
 */
-io.of(/^\/file_monitor-\w+$/).on("connection", (socket) => {
+//io.of(/^\/file_monitor-\w+$/).on("connection", (socket) => {
+io.of(/^\/stdout_monitor-[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/).on("connection", (socket) => {
     const namespace = socket.nsp;
-    const taskId = namespace.name.split('-', 2)[1]
-    const filename = `./${taskId}/stdout.log`
+    const taskId = namespace.name.split('stdout_monitor-', 2)[1]
+
+    if (taskId == null || taskId == undefined) {
+      return
+    }
+
+    const filename = `/var/tasks/${taskId}/stdout.log`
 
     console.log(`someone connected to file monitor namespace: ${namespace.name} taskId: ${taskId}`);
 
