@@ -3,9 +3,15 @@ const nReadlines = require('n-readlines');
 
 //function getNumberOfLines(filePath) {
 const getNumberOfLines = (filePath) => {
-    const fileBuffer =  fs.readFileSync(filePath);
-    split_lines = fileBuffer.toString().split("\n");
-    return split_lines.length;
+    try {
+        if (fs.existsSync(filePath)) {
+            const fileBuffer =  fs.readFileSync(filePath);
+            split_lines = fileBuffer.toString().split("\n");
+            return split_lines.length;
+        } else return 0
+    } catch(err) {
+    console.error(err)
+    }
 
 }
 
