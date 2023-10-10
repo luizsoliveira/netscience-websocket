@@ -8,7 +8,7 @@ const httpServer = http.createServer(app);
 // Thanks @Farias-sys
 const cors = require('cors')
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:7000")
+    //res.header("Access-Control-Allow-Origin", "http://localhost:7000")
     res.header("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE")
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization")
     app.use(cors())
@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 const { Server } = require("socket.io");
 const io = new Server(httpServer,{
   cors: {
-    origin: "http://localhost:7000"     
+    origin: ["http://localhost:7000", "http://localhost:80"]     
   }
 });
 
@@ -43,7 +43,7 @@ app.get('/task_simple', (req, res) => {
 });
 
 // Route that returns a segment of stdout file
-app.get('/stdout_segment/:taskId/:begin/:end', (req, res) => {
+app.get('/websocket/stdout_segment/:taskId/:begin/:end', (req, res) => {
     const filename = `/var/tasks/${req.params.taskId}/stdout.log`
     lines = fileUtils.getRangeOfLines(filename, req.params.begin, req.params.end)
     res.send(lines)
@@ -54,7 +54,7 @@ app.get('/stdout_segment/:taskId/:begin/:end', (req, res) => {
  Meta route for websockets based in namespace
 */
 //io.of(/^\/file_monitor-\w+$/).on("connection", (socket) => {
-io.of(/^\/stdout_monitor-[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/).on("connection", (socket) => {
+io.of(/^\/websocket\/stdout_monitor-[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/).on("connection", (socket) => {
     const namespace = socket.nsp.name;
     const taskId = namespace.split('stdout_monitor-', 2)[1]
 
