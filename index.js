@@ -3,12 +3,13 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const httpServer = http.createServer(app);
+const csv = require("csvtojson");
 
 // Call the express framework
 // Thanks @Farias-sys
 const cors = require('cors')
 app.use((req, res, next) => {
-    //res.header("Access-Control-Allow-Origin", "http://localhost:7000")
+    res.header("Access-Control-Allow-Origin", "http://localhost:81")
     res.header("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE")
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization")
     app.use(cors())
@@ -19,7 +20,7 @@ app.use((req, res, next) => {
 const { Server } = require("socket.io");
 const io = new Server(httpServer,{
   cors: {
-    origin: ["http://localhost:7000", "http://localhost:80"]     
+    origin: ["http://localhost:7000", "http://localhost:80", "http://localhost:81"]     
   }
 });
 
@@ -48,6 +49,25 @@ app.get('/websocket/stdout_segment/:taskId/:begin/:end', (req, res) => {
     lines = fileUtils.getRangeOfLines(filename, req.params.begin, req.params.end)
     res.send(lines)
 
+});
+
+// Route that returns a file inside a namespace
+app.get('/websocket/dataset/:taskId', (req, res) => {
+  const filename = `/var/tasks/${req.params.taskId}/DATASET.csv`
+
+  //Check if the file exists
+  fs.access(filename, fs.F_OK, (err) => {
+    if (err) {
+      console.error(err)
+      res.sendStatus(404);
+    }})
+
+  // Convert a csv file with csvtojson
+  csv()
+    .fromFile(filename)
+    .then(function(jsonArrayObj){ //when parse finished, result will be emitted here.
+      res.send(jsonArrayObj); 
+    })
 });
 
 /*
@@ -83,9 +103,6 @@ io.of(/^\/websocket\/stdout_monitor-[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F
     });
 
   });
-
-  
-  
 
 httpServer.listen(3000, () => {
   console.log('listening on *:3000');

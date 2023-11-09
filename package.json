@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "description": "Websocket endpoints for real-time integration between netscience backend and frontend",
     "dependencies": {
+        "csvtojson": "^2.0.10",
         "express": "^4.18.2",
         "lazy": "^1.0.11",
         "n-readlines": "^1.0.1",
