@@ -70,6 +70,26 @@ app.get('/websocket/dataset/:taskId', (req, res) => {
     })
 });
 
+// Route that returns a file inside a namespace
+// Not used yet
+app.get('/websocket/dataset/csv/:taskId', (req, res) => {
+  const filename = `/var/tasks/${req.params.taskId}/DATASET.csv`
+
+  //Check if the file exists
+  fs.access(filename, fs.F_OK, (err) => {
+    if (err) {
+      console.error(err)
+      res.sendStatus(404);
+    }})
+  
+  try {  
+      const data = fs.readFileSync(filename, 'utf8');
+      res.send(data.toString());    
+  } catch(e) {
+      console.log('Error:', e.stack);
+  }
+});
+
 /*
  Meta route for websockets based in namespace
 */
