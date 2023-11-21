@@ -55,19 +55,20 @@ app.get('/websocket/stdout_segment/:taskId/:begin/:end', (req, res) => {
 app.get('/websocket/dataset/:taskId', (req, res) => {
   const filename = `/var/tasks/${req.params.taskId}/DATASET.csv`
 
-  //Check if the file exists
-  fs.access(filename, fs.F_OK, (err) => {
-    if (err) {
-      console.error(err)
-      res.sendStatus(404);
-    }})
+  if (fs.existsSync(filename)) {
 
-  // Convert a csv file with csvtojson
-  csv()
+    // Convert a csv file with csvtojson
+    csv()
     .fromFile(filename)
     .then(function(jsonArrayObj){ //when parse finished, result will be emitted here.
       res.send(jsonArrayObj); 
     })
+  } else {
+    //Dataset is not ready yet
+    res.send({})
+  }
+
+  
 });
 
 // Route that returns a file inside a namespace
@@ -75,19 +76,14 @@ app.get('/websocket/dataset/:taskId', (req, res) => {
 app.get('/websocket/dataset/csv/:taskId', (req, res) => {
   const filename = `/var/tasks/${req.params.taskId}/DATASET.csv`
 
-  //Check if the file exists
-  fs.access(filename, fs.F_OK, (err) => {
-    if (err) {
-      console.error(err)
-      res.sendStatus(404);
-    }})
-  
-  try {  
-      const data = fs.readFileSync(filename, 'utf8');
-      res.send(data.toString());    
-  } catch(e) {
-      console.log('Error:', e.stack);
+  if (fs.existsSync(filename)) {
+    const data = fs.readFileSync(filename, 'utf8');
+    res.send(data.toString());    
+  } else {
+    //Dataset is not ready yet
+    res.send({})
   }
+ 
 });
 
 /*
