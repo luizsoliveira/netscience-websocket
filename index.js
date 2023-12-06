@@ -83,6 +83,20 @@ app.get('/websocket/dataset/csv/:taskId', (req, res) => {
     //Dataset is not ready yet
     res.send({})
   }
+});
+
+// Route that returns a file inside a namespace
+// Not used yet
+app.get('/websocket/dataset/:taskId/fs_importances', (req, res) => {
+  const filename = `/var/tasks/${req.params.taskId}/fs_importances.json`
+
+  if (fs.existsSync(filename)) {
+    const data = fs.readFileSync(filename, 'utf8');
+    res.send(data.toString());    
+  } else {
+    //Features importances file is not ready yet
+    res.send({})
+  }
  
 });
 
