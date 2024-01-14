@@ -85,19 +85,17 @@ app.get('/websocket/dataset/csv/:taskId', (req, res) => {
   }
 });
 
-// Route that returns a file inside a namespace
-// Not used yet
-app.get('/websocket/dataset/:taskId/fs_importances', (req, res) => {
-  const filename = `/var/tasks/${req.params.taskId}/fs_importances.json`
+// Route that returns a file inside a task workspace
+app.get('/websocket/task/:taskId/:filename', (req, res) => {
+  const filename = `/var/tasks/${req.params.taskId}/${req.params.filename}`
 
   if (fs.existsSync(filename)) {
     const data = fs.readFileSync(filename, 'utf8');
     res.send(data.toString());    
   } else {
-    //Features importances file is not ready yet
+    //file is not ready yet
     res.send({})
   }
- 
 });
 
 /*
